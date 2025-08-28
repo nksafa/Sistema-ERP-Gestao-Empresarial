@@ -1,4 +1,6 @@
 package com.suplementos.erp.model;
 
-public class Categoria {
-}
+public record Categoria(
+        int id,
+        String nome
+) {}

@@ -25,6 +25,10 @@ public class EstoqueService {
         System.out.println("Produto #" + id + " removido.");
     }
 
+    public void atualizarEstoque(int id, int novaQuantidade) {
+        produtoRepository.atualizarEstoque(id, novaQuantidade);
+    }
+
     public void verificarAlertasDeEstoque() {
         System.out.println("\n--- ALERTA DE ESTOQUE ---");
         boolean alerta = false;
@@ -38,4 +42,15 @@ public class EstoqueService {
             System.out.println("Nenhum alerta de estoque no momento.");
         }
     }
+    // Adicione este método na classe EstoqueService
+    public void listarTodosOsProdutos() {
+        System.out.println("\n--- LISTA DE PRODUTOS ---");
+        for (Produto p : produtoRepository.buscarTodos()) {
+            System.out.println("ID: " + p.id() + " | Nome: " + p.nome() + " | Estoque: " + p.quantidadeEmEstoque());
+        }
+        if (produtoRepository.buscarTodos().isEmpty()) {
+            System.out.println("Nenhum produto cadastrado.");
+        }
+    }
+
 }

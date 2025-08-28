@@ -1,4 +1,7 @@
 package com.suplementos.erp.model;
 
-public class Fornecedor {
-}
+public record Fornecedor(
+        int id,
+        String nome,
+        String contato
+) {}

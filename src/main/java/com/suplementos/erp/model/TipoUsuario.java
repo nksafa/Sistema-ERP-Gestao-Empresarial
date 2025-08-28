@@ -1,4 +1,5 @@
 package com.suplementos.erp.model;
 
-public class TipoUsuario {
+public enum TipoUsuario {
+    ADMINISTRADOR, GERENTE, FUNCIONARIO, CLIENTE
 }

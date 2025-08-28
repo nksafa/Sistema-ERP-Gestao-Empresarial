@@ -1,4 +1,5 @@
 package com.suplementos.erp.model;
 
-public class FormaPagamento {
+public enum FormaPagamento {
+    CREDITO, DEBITO, PIX, DINHEIRO
 }
