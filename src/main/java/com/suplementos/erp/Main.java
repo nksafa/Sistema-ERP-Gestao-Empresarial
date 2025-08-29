@@ -7,6 +7,7 @@ import com.suplementos.erp.repository.VendaRepository;
 import com.suplementos.erp.service.EstoqueService;
 import com.suplementos.erp.service.VendasService;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -22,14 +23,6 @@ public class Main {
         EstoqueService estoqueService = new EstoqueService(produtoRepository);
         VendasService vendasService = new VendasService(vendaRepository, produtoRepository);
 
-        // Dados de exemplo para iniciar o sistema
-        Fornecedor fornecedorGrowth = new Fornecedor(1, "Growth Supplements", "contato@growth.com");
-        Categoria categoriaWhey = new Categoria(1, "Whey Protein");
-        Categoria categoriaCreatina = new Categoria(2, "Creatina");
-        Produto whey = new Produto(101, "Whey Isolado", "Whey Protein 90%", 180.00, 5, 2, categoriaWhey, fornecedorGrowth);
-        Produto creatina = new Produto(102, "Creatina Pura", "Creatina Monohidratada", 10, 5, 2, categoriaCreatina, fornecedorGrowth);
-        estoqueService.adicionarProduto(whey);
-        estoqueService.adicionarProduto(creatina);
 
         // Criando usuários para o exemplo com diferentes papéis e senhas
         Usuario administrador = new Usuario(1, "Admin", "senhaadmin", TipoUsuario.ADMINISTRADOR);
@@ -49,6 +42,7 @@ public class Main {
         }
 
         System.out.println("\nBem-vindo(a), " + usuarioLogado.nome() + " (" + usuarioLogado.tipo() + ")!");
+        estoqueService.verificarAlertasDeEstoque();
 
         // Exibir o menu apropriado
         if (usuarioLogado.tipo() == TipoUsuario.FUNCIONARIO) {
@@ -81,7 +75,7 @@ public class Main {
 
         // Verifica a senha secundária para administradores e gerentes
         if (usuario.tipo() == TipoUsuario.ADMINISTRADOR || usuario.tipo() == TipoUsuario.GERENTE) {
-            System.out.print("Acesso privilegiado. Digite a senha secundária: ");
+            System.out.print("Acesso privilegiado. Digite a senha secundária: (dica: 1234) ");
             String senhaSecundaria = scanner.next();
             // Para este exemplo, usamos uma senha fixa. Em um sistema real, seria mais seguro.
             if (!senhaSecundaria.equals("1234")) {
@@ -107,7 +101,7 @@ public class Main {
                     menuCadastroProdutos(scanner, estoqueService);
                     break;
                 case 2:
-                    menuGerenciamentoVendas(scanner, vendasService, usuarioLogado);
+                    menuGerenciamentoVendas(scanner, estoqueService, vendasService, usuarioLogado);
                     break;
                 case 0:
                     System.out.println("Saindo do sistema. Até mais!");
@@ -136,7 +130,7 @@ public class Main {
                     menuCadastroProdutos(scanner, estoqueService);
                     break;
                 case 2:
-                    menuGerenciamentoVendas(scanner, vendasService, usuarioLogado);
+                    menuGerenciamentoVendas(scanner,estoqueService, vendasService, usuarioLogado);
                     break;
                 case 3:
                     System.out.println("Opção 'Fornecedores e Compras' ainda não implementada.");
@@ -156,12 +150,99 @@ public class Main {
         } while (opcaoPrincipal != 0);
     }
 
+    private static void adicionarNovoProduto(Scanner scanner, EstoqueService estoqueService) {
+        System.out.println("\n--- ADICIONAR NOVO PRODUTO ---");
+
+        System.out.print("Nome do produto: ");
+        scanner.nextLine(); // Consome a nova linha pendente
+        String nome = scanner.nextLine();
+
+        System.out.print("Descrição: ");
+        String descricao = scanner.nextLine();
+
+        System.out.print("Preço: ");
+        double preco = scanner.nextDouble();
+
+        System.out.print("Quantidade em estoque: ");
+        int quantidade = scanner.nextInt();
+
+        System.out.print("Estoque mínimo: ");
+        int estoqueMinimo = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("Categoria: ");
+        String categoriaNome = scanner.nextLine();
+
+        System.out.print("Fornecedor: ");
+        String fornecedorNome = scanner.nextLine();
+
+        // Gerando o ID e criando o objeto produto
+        // AQUI ESTÁ A MUDANÇA: PEGAMOS O REPOSITÓRIO E PEDIMOS O PRÓXIMO ID.
+        int novoId = estoqueService.getProdutoRepository().getNextId();
+
+        Categoria categoria = new Categoria(0, categoriaNome);
+        Fornecedor fornecedor = new Fornecedor(0, fornecedorNome, "");
+
+        Produto novoProduto = new Produto(novoId, nome, descricao, preco, quantidade, estoqueMinimo, categoria, fornecedor);
+
+        // Salvando o produto no banco de dados
+        estoqueService.adicionarProduto(novoProduto);
+        System.out.println("Produto '" + nome + "' adicionado com sucesso!");
+    }
+
+    private static List<Integer> escolherProdutos(Scanner scanner) {
+        List<Integer> ids = new ArrayList<>();
+        System.out.println("\nDigite os IDs dos produtos que deseja vender (digite '0' para finalizar):");
+        int id;
+        while (true) {
+            try {
+                System.out.print("ID do produto: ");
+                id = scanner.nextInt();
+                if (id == 0) {
+                    break;
+                }
+                ids.add(id);
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, digite um número.");
+                scanner.nextLine(); // Limpa o buffer do scanner
+            }
+        }
+        return ids;
+    }
+
+    private static FormaPagamento escolherFormaPagamento(Scanner scanner) {
+        System.out.println("\nEscolha a forma de pagamento:");
+        int i = 1;
+        for (FormaPagamento fp : FormaPagamento.values()) {
+            System.out.println(i + ". " + fp.name());
+            i++;
+        }
+
+        FormaPagamento formaPagamento = null;
+        int opcaoPagamento;
+        while (formaPagamento == null) {
+            try {
+                System.out.print("Opção: ");
+                opcaoPagamento = scanner.nextInt();
+                if (opcaoPagamento > 0 && opcaoPagamento <= FormaPagamento.values().length) {
+                    formaPagamento = FormaPagamento.values()[opcaoPagamento - 1];
+                } else {
+                    System.out.println("Opção inválida. Tente novamente.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, digite um número.");
+                scanner.nextLine();
+            }
+        }
+        return formaPagamento;
+    }
+
     // Métodos auxiliares de menu, mantidos do código anterior...
     private static void menuCadastroProdutos(Scanner scanner, EstoqueService estoqueService) {
         // ... (código existente)
         int opcaoProdutos;
         do {
-            System.out.println("\n--- MENU DE PRODUTOS E ESTOQUE ---");
+            System.out.println("\n--- MENU DE PRODUTOS ---");
             System.out.println("1. Listar todos os produtos");
             System.out.println("2. Verificar alertas de estoque");
             System.out.println("3. Adicionar novo produto");
@@ -179,7 +260,7 @@ public class Main {
                     estoqueService.verificarAlertasDeEstoque();
                     break;
                 case 3:
-                    System.out.println("Funcionalidade 'Adicionar Produto' ainda não implementada.");
+                    adicionarNovoProduto(scanner, estoqueService);
                     break;
                 case 4:
                     System.out.println("Funcionalidade 'Editar Produto' ainda não implementada.");
@@ -196,8 +277,7 @@ public class Main {
         } while (opcaoProdutos != 0);
     }
 
-    private static void menuGerenciamentoVendas(Scanner scanner, VendasService vendasService, Usuario funcionario) {
-        // ... (código existente)
+    private static void menuGerenciamentoVendas(Scanner scanner,EstoqueService estoqueService, VendasService vendasService, Usuario usuarioLogado) {
         int opcaoVendas;
         do {
             System.out.println("\n--- MENU DE VENDAS ---");
@@ -209,8 +289,18 @@ public class Main {
 
             switch (opcaoVendas) {
                 case 1:
-                    System.out.println("Realizando nova venda (usando dados de exemplo)...");
-                    vendasService.realizarVenda(null, funcionario, List.of(101, 102), FormaPagamento.CREDITO);
+                    System.out.println("\n--- REALIZAR NOVA VENDA ---");
+                    estoqueService.listarTodosOsProdutos();
+                    List<Integer> idsProdutos = escolherProdutos(scanner);
+                    if (idsProdutos.isEmpty()) {
+                        System.out.println("Venda cancelada. Nenhum produto foi selecionado.");
+                        break;
+                    }
+                    // 3. Coletar a forma de pagamento
+                    FormaPagamento formaPagamento = escolherFormaPagamento(scanner);
+
+                    // 4. Realizar a venda
+                    vendasService.realizarVenda(null, usuarioLogado, idsProdutos, formaPagamento);
                     break;
                 case 2:
                     vendasService.listarHistoricoDeVendas();
@@ -232,5 +322,8 @@ public class Main {
             scanner.next(); // Limpa o buffer do scanner
             return -1; // Retorna um valor inválido para o loop
         }
+
+
+
     }
 }

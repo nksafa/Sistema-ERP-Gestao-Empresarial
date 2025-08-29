@@ -53,4 +53,7 @@ public class EstoqueService {
         }
     }
 
+    public ProdutoRepository getProdutoRepository() {
+        return this.produtoRepository;
+    }
 }

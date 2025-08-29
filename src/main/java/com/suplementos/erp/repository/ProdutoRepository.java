@@ -38,7 +38,9 @@ public class ProdutoRepository implements IRepository<Produto> {
             // Em caso de erro (como um ObjectId no _id), reiniciamos o contador.
             nextId = 1;
         }
+
     }
+// Dentro da classe ProdutoRepository.java
 
     // Este método é público agora para ser usado em outras classes
     public int getNextId() {
@@ -116,4 +118,5 @@ public class ProdutoRepository implements IRepository<Produto> {
                 fornecedor
         );
     }
+
 }
