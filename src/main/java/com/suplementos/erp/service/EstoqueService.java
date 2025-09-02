@@ -16,8 +16,12 @@ public class EstoqueService {
     }
 
     public void editarProduto(int id, Produto produtoAtualizado) {
-        produtoRepository.salvar(id, produtoAtualizado);
-        System.out.println("Produto #" + id + " editado com sucesso.");
+        if (produtoRepository.buscarPorId(id) != null) {
+            produtoRepository.salvar(id, produtoAtualizado);
+            System.out.println("Produto editado com sucesso.");
+        } else {
+            System.out.println("Erro: Produto com ID " + id + " não encontrado.");
+        }
     }
 
     public void removerProduto(int id) {
@@ -52,6 +56,11 @@ public class EstoqueService {
             System.out.println("Nenhum produto cadastrado.");
         }
     }
+
+    public Produto buscarProdutoPorId(int id) {
+        return produtoRepository.buscarPorId(id);
+    }
+
 
     public ProdutoRepository getProdutoRepository() {
         return this.produtoRepository;

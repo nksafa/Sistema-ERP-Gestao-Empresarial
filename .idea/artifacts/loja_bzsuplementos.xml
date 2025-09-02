@@ -1,0 +1,19 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="loja_bzsuplementos">
+    <output-path>$PROJECT_DIR$/out/artifacts/loja_bzsuplementos</output-path>
+    <root id="archive" name="loja_bzsuplementos.war">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="ProjetoPOO3" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: org.mongodb:mongodb-driver-sync:4.11.1" />
+          <element id="library" level="project" name="Maven: org.mongodb:bson:4.11.1" />
+          <element id="library" level="project" name="Maven: org.mongodb:mongodb-driver-core:4.11.1" />
+          <element id="library" level="project" name="Maven: org.mongodb:bson-record-codec:4.11.1" />
+        </element>
+      </element>
+      <element id="dir-copy" path="$PROJECT_DIR$/src/main/webapp" />
+    </root>
+  </artifact>
+</component>
