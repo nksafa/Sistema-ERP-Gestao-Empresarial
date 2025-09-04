@@ -11,12 +11,14 @@ import java.util.List;
 public class VendasService {
     private final VendaRepository vendaRepository;
     private final ProdutoRepository produtoRepository;
+    private final EstoqueService estoqueService; // Adicionamos a dependência para o EstoqueService
 
     private static int nextVendaId = 1;
 
-    public VendasService(VendaRepository vendaRepository, ProdutoRepository produtoRepository) {
+    public VendasService(VendaRepository vendaRepository, ProdutoRepository produtoRepository, EstoqueService estoqueService) {
         this.vendaRepository = vendaRepository;
         this.produtoRepository = produtoRepository;
+        this.estoqueService = estoqueService;
     }
 
     public Venda realizarVenda(Usuario cliente, Usuario funcionario, List<Integer> idsProdutos, FormaPagamento formaPagamento) {
@@ -25,11 +27,12 @@ public class VendasService {
 
         for (Integer id : idsProdutos) {
             Produto p = produtoRepository.buscarPorId(id);
-            if (p != null && p.quantidadeEmEstoque() > 0) {
+            if (p != null && p.getQuantidadeEmEstoque() > 0) {
                 produtosVendidos.add(p);
-                valorTotal += p.preco();
-                // Aqui é onde o estoque é alterado no banco de dados
-                produtoRepository.atualizarEstoque(p.id(), p.quantidadeEmEstoque() - 1);
+                valorTotal += p.getPreco();
+
+                // Agora chamamos o método do EstoqueService
+                estoqueService.atualizarEstoque(p.getId(), -1);
             } else {
                 System.out.println("Erro: Produto com ID " + id + " não disponível.");
                 return null;
@@ -37,21 +40,22 @@ public class VendasService {
         }
 
         Venda novaVenda = new Venda(nextVendaId++, new Date(), cliente, funcionario, produtosVendidos, valorTotal, formaPagamento);
-        vendaRepository.salvar(novaVenda.id(), novaVenda);
+        // Salvando a nova venda
+        vendaRepository.salvar(novaVenda.getId(), novaVenda);
 
-        System.out.println("\n--- Recibo da Venda #" + novaVenda.id() + " ---");
-        System.out.println("Data: " + novaVenda.dataVenda());
-        System.out.println("Funcionário: " + novaVenda.funcionario().nome());
+        System.out.println("\n--- Recibo da Venda #" + novaVenda.getId() + " ---");
+        System.out.println("Data: " + novaVenda.getDataVenda());
+        System.out.println("Funcionário: " + novaVenda.getFuncionario().getNome());
         System.out.println("Itens:");
         for (Produto p : produtosVendidos) {
-            System.out.println("- " + p.nome() + " | R$" + String.format("%.2f", p.preco()));
+            System.out.println("- " + p.getNome() + " | R$" + String.format("%.2f", p.getPreco()));
         }
-        System.out.println("Total: R$" + String.format("%.2f", novaVenda.valorTotal()));
+        System.out.println("Total: R$" + String.format("%.2f", novaVenda.getValorTotal()));
         System.out.println("------------------------------------");
 
         return novaVenda;
     }
-    // Adicione este método na classe VendasService
+
     public void listarHistoricoDeVendas() {
         System.out.println("\n--- HISTÓRICO DE VENDAS ---");
         List<Venda> vendas = vendaRepository.buscarTodos();
@@ -59,9 +63,8 @@ public class VendasService {
             System.out.println("Nenhuma venda realizada.");
         } else {
             for (Venda v : vendas) {
-                System.out.println("Venda #" + v.id() + " | Data: " + v.dataVenda() + " | Total: R$" + String.format("%.2f", v.valorTotal()));
+                System.out.println("Venda #" + v.getId() + " | Data: " + v.getDataVenda() + " | Total: R$" + String.format("%.2f", v.getValorTotal()));
             }
         }
     }
-
 }

@@ -11,8 +11,8 @@ public class EstoqueService {
     }
 
     public void adicionarProduto(Produto produto) {
-        produtoRepository.salvar(produto.id(), produto);
-        System.out.println("Produto '" + produto.nome() + "' adicionado ao estoque.");
+        produtoRepository.salvar(produto.getId(), produto);
+        System.out.println("Produto '" + produto.getNome() + "' adicionado ao estoque.");
     }
 
     public void editarProduto(int id, Produto produtoAtualizado) {
@@ -29,16 +29,27 @@ public class EstoqueService {
         System.out.println("Produto #" + id + " removido.");
     }
 
-    public void atualizarEstoque(int id, int novaQuantidade) {
-        produtoRepository.atualizarEstoque(id, novaQuantidade);
+    public void atualizarEstoque(int id, int quantidade) {
+        Produto produto = produtoRepository.buscarPorId(id);
+        if (produto != null) {
+            int novaQuantidade = produto.getQuantidadeEmEstoque() + quantidade;
+            produto.setQuantidadeEmEstoque(novaQuantidade);
+
+            // Usando o método de salvar do Hibernate que também atualiza
+            produtoRepository.salvar(produto);
+
+            System.out.println("Estoque do produto '" + produto.getNome() + "' atualizado para: " + novaQuantidade);
+        } else {
+            System.out.println("Produto com ID " + id + " não encontrado.");
+        }
     }
 
     public void verificarAlertasDeEstoque() {
         System.out.println("\n--- ALERTA DE ESTOQUE ---");
         boolean alerta = false;
         for (Produto p : produtoRepository.buscarTodos()) {
-            if (p.quantidadeEmEstoque() < p.estoqueMinimo()) {
-                System.out.println("ALERTA: Produto '" + p.nome() + "' está abaixo do estoque mínimo (" + p.quantidadeEmEstoque() + "/" + p.estoqueMinimo() + ")!");
+            if (p.getQuantidadeEmEstoque() < p.getEstoqueMinimo()) {
+                System.out.println("ALERTA: Produto '" + p.getNome() + "' está abaixo do estoque mínimo (" + p.getQuantidadeEmEstoque() + "/" + p.getEstoqueMinimo() + ")!");
                 alerta = true;
             }
         }
@@ -50,7 +61,7 @@ public class EstoqueService {
     public void listarTodosOsProdutos() {
         System.out.println("\n--- LISTA DE PRODUTOS ---");
         for (Produto p : produtoRepository.buscarTodos()) {
-            System.out.println("ID: " + p.id() + " | Nome: " + p.nome() + " | Estoque: " + p.quantidadeEmEstoque());
+            System.out.println("ID: " + p.getId() + " | Nome: " + p.getNome() + " | Estoque: " + p.getQuantidadeEmEstoque());
         }
         if (produtoRepository.buscarTodos().isEmpty()) {
             System.out.println("Nenhum produto cadastrado.");

@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:head>
+    <title>Login - ERP Suplementos</title>
+    <h:outputStylesheet name="css/estilo.css" />
+</h:head>
+<h:body>
+    <h2>Login</h2>
+    <h:form>
+        <h:panelGrid columns="2" cellpadding="5">
+            <h:outputLabel for="username" value="Usuário: " />
+            <h:inputText id="username" value="#{loginBean.username}" />
+
+            <h:outputLabel for="password" value="Senha: " />
+            <h:inputSecret id="password" value="#{loginBean.password}" />
+
+            <h:commandButton value="Entrar" action="#{loginBean.login}" />
+        </h:panelGrid>
+
+        <h:outputText value="#{loginBean.errorMessage}" style="color:red;" />
+    </h:form>
+</h:body>
+</html>

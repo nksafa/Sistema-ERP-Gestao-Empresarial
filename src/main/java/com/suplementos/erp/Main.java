@@ -21,16 +21,16 @@ public class Main {
 
         // Inicialização dos serviços (injeção de dependências)
         EstoqueService estoqueService = new EstoqueService(produtoRepository);
-        VendasService vendasService = new VendasService(vendaRepository, produtoRepository);
+        VendasService vendasService = new VendasService(vendaRepository, produtoRepository, estoqueService);
 
 
         // Criando usuários para o exemplo com diferentes papéis e senhas
         Usuario administrador = new Usuario(1, "Admin", "senhaadmin", TipoUsuario.ADMINISTRADOR);
         Usuario gerente = new Usuario(2, "Gerente", "senhagerente", TipoUsuario.GERENTE);
         Usuario funcionario = new Usuario(3, "Funcionario", "senhafunc", TipoUsuario.FUNCIONARIO);
-        usuarioRepository.salvar(administrador.codigo(), administrador);
-        usuarioRepository.salvar(gerente.codigo(), gerente);
-        usuarioRepository.salvar(funcionario.codigo(), funcionario);
+        usuarioRepository.salvar(administrador.getCodigo(), administrador);
+        usuarioRepository.salvar(gerente.getCodigo(), gerente);
+        usuarioRepository.salvar(funcionario.getCodigo(), funcionario);
 
         Scanner scanner = new Scanner(System.in);
 
@@ -41,11 +41,11 @@ public class Main {
             return;
         }
 
-        System.out.println("\nBem-vindo(a), " + usuarioLogado.nome() + " (" + usuarioLogado.tipo() + ")!");
+        System.out.println("\nBem-vindo(a), " + usuarioLogado.getNome() + " (" + usuarioLogado.getTipo() + ")!");
         estoqueService.verificarAlertasDeEstoque();
 
         // Exibir o menu apropriado
-        if (usuarioLogado.tipo() == TipoUsuario.FUNCIONARIO) {
+        if (usuarioLogado.getTipo() == TipoUsuario.FUNCIONARIO) {
             menuFuncionario(scanner, estoqueService, vendasService, usuarioLogado);
         } else {
             menuAdminGerente(scanner, estoqueService, vendasService, usuarioLogado);
@@ -68,13 +68,13 @@ public class Main {
         }
 
         // Verifica a senha principal
-        if (!usuario.senha().equals(senha)) {
+        if (!usuario.getSenha().equals(senha)) {
             System.out.println("Senha incorreta.");
             return null;
         }
 
         // Verifica a senha secundária para administradores e gerentes
-        if (usuario.tipo() == TipoUsuario.ADMINISTRADOR || usuario.tipo() == TipoUsuario.GERENTE) {
+        if (usuario.getTipo() == TipoUsuario.ADMINISTRADOR || usuario.getTipo() == TipoUsuario.GERENTE) {
             System.out.print("Acesso privilegiado. Digite a senha secundária: (dica: 1234) ");
             String senhaSecundaria = scanner.next();
             // Para este exemplo, usamos uma senha fixa. Em um sistema real, seria mais seguro.
@@ -326,29 +326,29 @@ public class Main {
             return;
         }
 
-        System.out.println("\nProduto encontrado: " + produtoExistente.nome());
+        System.out.println("\nProduto encontrado: " + produtoExistente.getNome());
         System.out.println("Preencha os novos dados (deixe em branco para manter o valor atual):");
 
         scanner.nextLine(); // Consome a nova linha
 
-        System.out.print("Novo nome (" + produtoExistente.nome() + "): ");
+        System.out.print("Novo nome (" + produtoExistente.getNome() + "): ");
         String novoNome = scanner.nextLine();
         if (novoNome.isEmpty()) {
-            novoNome = produtoExistente.nome();
+            novoNome = produtoExistente.getNome();
         }
 
-        System.out.print("Nova descrição (" + produtoExistente.descricao() + "): ");
+        System.out.print("Nova descrição (" + produtoExistente.getDescricao() + "): ");
         String novaDescricao = scanner.nextLine();
         if (novaDescricao.isEmpty()) {
-            novaDescricao = produtoExistente.descricao();
+            novaDescricao = produtoExistente.getDescricao();
         }
 
         double novoPreco;
         while (true) {
-            System.out.print("Novo preço (" + produtoExistente.preco() + "): ");
+            System.out.print("Novo preço (" + produtoExistente.getPreco() + "): ");
             String precoStr = scanner.nextLine();
             if (precoStr.isEmpty()) {
-                novoPreco = produtoExistente.preco();
+                novoPreco = produtoExistente.getPreco();
                 break;
             }
             try {
@@ -361,10 +361,10 @@ public class Main {
 
         int novaQuantidadeEmEstoque;
         while (true) {
-            System.out.print("Nova quantidade em estoque (" + produtoExistente.quantidadeEmEstoque() + "): ");
+            System.out.print("Nova quantidade em estoque (" + produtoExistente.getQuantidadeEmEstoque() + "): ");
             String quantidadeStr = scanner.nextLine();
             if (quantidadeStr.isEmpty()) {
-                novaQuantidadeEmEstoque = produtoExistente.quantidadeEmEstoque();
+                novaQuantidadeEmEstoque = produtoExistente.getQuantidadeEmEstoque();
                 break;
             }
             try {
@@ -377,10 +377,10 @@ public class Main {
 
         int novoEstoqueMinimo;
         while (true) {
-            System.out.print("Novo estoque mínimo (" + produtoExistente.estoqueMinimo() + "): ");
+            System.out.print("Novo estoque mínimo (" + produtoExistente.getEstoqueMinimo() + "): ");
             String estoqueMinimoStr = scanner.nextLine();
             if (estoqueMinimoStr.isEmpty()) {
-                novoEstoqueMinimo = produtoExistente.estoqueMinimo();
+                novoEstoqueMinimo = produtoExistente.getEstoqueMinimo();
                 break;
             }
             try {
@@ -392,8 +392,10 @@ public class Main {
         }
 
         // Supondo que categoria e fornecedor não sejam editáveis por enquanto para simplificar
-        Categoria categoria = produtoExistente.categoria();
-        Fornecedor fornecedor = produtoExistente.fornecedor();
+
+        Categoria categoria = new Categoria(0, produtoExistente.getCategoria());
+
+        Fornecedor fornecedor = new Fornecedor(0, produtoExistente.getFornecedor(), "");
 
         Produto produtoAtualizado = new Produto(id, novoNome, novaDescricao, novoPreco, novaQuantidadeEmEstoque, novoEstoqueMinimo, categoria, fornecedor);
 
@@ -414,7 +416,7 @@ public class Main {
             return;
         }
 
-        System.out.println("Confirmar remoção do produto: " + produtoParaRemover.nome() + "? (s/n)");
+        System.out.println("Confirmar remoção do produto: " + produtoParaRemover.getNome() + "? (s/n)");
         scanner.nextLine(); // Consumir a nova linha
         String confirmacao = scanner.nextLine();
 
