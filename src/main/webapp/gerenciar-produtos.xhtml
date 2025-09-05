@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Gerenciar Produtos</title>
+    <h:outputStylesheet name="css/estilo.css" />
+</h:head>
+
+<h:body>
+    <h1>Gerenciar Produtos</h1>
+
+    <h:form>
+        <h:dataTable value="#{produtoBean.listaProdutos}" var="prod" border="1">
+            <h:column>
+                <f:facet name="header">ID</f:facet>
+                #{prod.id}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Nome</f:facet>
+                #{prod.nome}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Preço</f:facet>
+                #{prod.preco}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Estoque</f:facet>
+                #{prod.quantidadeEmEstoque}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Ações</f:facet>
+                <h:commandButton value="Editar" action="#{produtoBean.editar(prod)}" />
+                <h:commandButton value="Remover" action="#{produtoBean.remover(prod)}" />
+            </h:column>
+        </h:dataTable>
+    </h:form>
+
+    <br/>
+    <h:button value="Cadastrar Novo Produto" action="#{produtoBean.novoProduto}" />
+    <br/>
+    <h:link value="Voltar para o Dashboard" outcome="dashboard.xhtml" />
+
+</h:body>
+</html>
